@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Parcs Nationaux Français</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5; }
+        header { background-color: #1b5e20; color: white; padding: 20px; text-align: center; font-size: 24px; }
+        .container { padding: 40px; text-align: left; }
+        #map { height: 500px; margin: 20px auto; width: 80%; }
+        .chart-container { width: 80%; margin: auto; }
+        canvas { background: white; padding: 20px; border-radius: 8px; }
+        
+        #map { height: 600px; width: 100%; }
+        .legend {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            font-size: 14px;
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            z-index: 1000;
+            width: 200px;
+        }
+        .map-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            width: 85%;
+        }
+        .legend img {
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        
+        .impact-section { display: flex; justify-content: space-around; background: #e8f5e9; padding: 20px; margin-top: 30px; border-radius: 8px; text-align: center; }
+        .impact-box { flex: 1; padding: 10px; }
+        .impact-stat { font-size: 32px; font-weight: bold; }
+        .green { color: #388e3c; }
+        .blue { color: #1976d2; }
+        .orange { color: #f57c00; }
+        .impact-subtext { font-size: 14px; color: #555; margin-top: 5px; }
+        
+        .info-box { background: #e8f5e9; padding: 15px; margin: 20px auto; width: 60%; border-left: 5px solid #2e7d32; }
+        h2 { font-size: 18px; }
+        h3 { font-size : 14px; color: #388e3c }
+        p {font-size : 13px}
+        .impact-list li { font-size: 12px; color: black; list-style-type: square; }
+        .footer { background-color: #1b5e20; color: white; text-align: center; padding: 15px; margin-top: 30px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🌿 Les Parcs Nationaux Français</h1>
+        <h2>Une exploration interactive de notre patrimoine naturel</h2>
+    </header>
+    
+    <div class="container">
+        <div class="info-box">
+            <strong>ℹ️ Découvrez notre patrimoine naturel</strong>
+            <p>En tout, on compte 11 parcs nationaux, répartis sur différents territoires, chacun ayant sa propre spécificité écologique. Leur rôle est crucial pour la préservation des écosystèmes uniques, qu'ils soient montagnards, côtiers ou tropicaux. Ces parcs agissent comme des sanctuaires pour la biodiversité, tout en permettant une gestion durable des ressources naturelles. Ils jouent aussi un rôle éducatif, en sensibilisant le public à la protection de l'environnement.</p>
+        </div>
+
+        <h2>📍 Carte des Parcs Nationaux</h2>
+        <div class="map-container">
+        <div id="map"></div>
+        </div>
+
+            
+        <h2>📊 Évolution et Statistiques</h2>
+        <div class="chart-container">
+            <canvas id="barChart"></canvas>
+        </div>
+        <h2>📊 Impact des Parcs Nationaux</h2>
+        <div class="impact-section">
+            <div class="impact-box">
+                <div class="impact-stat green">3.5M</div>
+                <div class="impact-subtext">Hectares protégés</div>
+            </div>
+            <div class="impact-box">
+                <div class="impact-stat blue">10M+</div>
+                <div class="impact-subtext">Visiteurs par an</div>
+            </div>
+            <div class="impact-box">
+                <div class="impact-stat orange">75%</div>
+                <div class="impact-subtext">Espèces protégées</div>
+            </div>
+        </div>
+        
+        <h2>Objectifs de Conservation</h2>
+        <ul class="impact-list">
+            <li>Protection de la biodiversité</li>
+            <li>Préservation des écosystèmes</li>
+            <li>Sensibilisation du public</li>
+            <li>Recherche scientifique</li>
+        </ul>
+        
+        <h2>Sources des Données</h2>
+        <h3>Données Géographiques</h3>
+        <p>Les coordonnées et informations géographiques des parcs proviennent du site officiel des Parcs nationaux de France (www.parcsnationaux.fr) et de l'IGN (Institut national de l'information géographique et forestière).</p>
+        
+        <h3>Statistiques de Fréquentation</h3>
+        <p>Les données de fréquentation sont issues des rapports annuels publiés par l'Office Français de la Biodiversité (OFB) et des bilans de fréquentation des parcs nationaux.</p>
+        
+        <h3>Données Environnementales</h3>
+        <p>Les informations sur la biodiversité et la superficie des parcs sont extraites des documents officiels du Ministère de la Transition écologique et de la base de données INPN (Inventaire National du Patrimoine Naturel).</p>
+    </div>
+    <div class="footer">
+        © 2024 Les Parcs Nationaux Français
+    </div>
+    <script>
+        
+        var map = L.map('map').setView([46.603354, 1.888334], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        var legend = L.control({position: 'bottomleft'});
+        legend.onAdd = function(map) {
+            var div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = '<strong>Légende</strong><br>' +
+                '<img src="https://svgsilh.com/svg/159294-795548.svg" width="20" height="20"> Parc de Montagne / Plateau calcaire <br>' +
+                '<img src="https://svgsilh.com/svg/1295271-207bc5.svg" width="20" height="20"> Parc Littoral<br>' +
+                '<img src="https://svgsilh.com/svg/1297489-ff9800.svg" width="20" height="20"> Parc Tropical<br>' +
+                '<span style="background: green; width: 20px; height: 10px; display: inline-block;"></span> Polygone des parcs';
+            return div;
+        };
+        legend.addTo(map);
+        
+        var parkIcons = {
+            "montagne": L.icon({iconUrl: 'https://svgsilh.com/svg/159294-795548.svg', iconSize: [50, 50]}),
+            "littoral": L.icon({iconUrl: 'https://svgsilh.com/svg/1295271-207bc5.svg', iconSize: [20, 20]}),
+            "tropical": L.icon({iconUrl: 'https://svgsilh.com/svg/1297489-ff9800.svg', iconSize: [30, 30]})
+        };
+
+        var markers = [];
+        
+        var parks = [
+            { name: "Parc National des Cévennes", coords: [44.2333, 3.5833], type: "montagne", creation: 1970, species: "Aigle royal, Loutre d'Europe", link: "https://www.cevennes-parcnational.fr" },
+            { name: "Parc National de la Vanoise", coords: [45.3925, 6.7347], type: "montagne", creation: 1963, species: "Bouquetin des Alpes", link: "https://www.vanoise-parcnational.fr" },
+            { name: "Parc National des Écrins", coords: [44.918, 6.416], type: "montagne", creation: 1973, species: "Chamois, Aigle royal", link: "https://www.ecrins-parcnational.fr" },
+            { name: "Parc National du Mercantour", coords: [44.15, 7.2], type: "montagne", creation: 1979, species: "Loup gris, Gypaète barbu", link: "https://www.mercantour-parcnational.fr" },
+            { name: "Parc National de Port-Cros", coords: [43.003, 6.396], type: "littoral", creation: 1963, species: "Hippocampe, Mérou brun", link: "https://www.portcros-parcnational.fr" },
+            { name: "Parc National des Pyrénées", coords: [42.85, -0.15], type: "montagne", creation: 1967, species: "Isard, Ours brun", link: "https://www.pyrenees-parcnational.fr" },
+            { name: "Parc National de Forêts", coords: [47.7994, 4.6042], type: "montagne", creation: 2019, species: "Cerf élaphe, Lynx boréal", link: "https://www.forets-parcnational.fr" },
+            { name: "Parc National des Calanques", coords: [43.21, 5.43], type: "littoral", creation: 2012, species: "Mérou brun, Posidonie", link: "https://www.calanques-parcnational.fr" },
+            { name: "Parc Amazonien de Guyane", coords: [3.9339, -53.0792], type: "tropical", creation: 2007, species: "Jaguar, Caïman noir", link: "https://www.paguyane-parcnational.fr" },
+            { name: "Parc National de la Guadeloupe", coords: [16.15, -61.6], type: "tropical", creation: 1989, species: "Lamantin, Colibri madère", link: "https://www.guadeloupe-parcnational.fr" },
+            { name: "Parc National de La Réunion", coords: [-21.12, 55.52], type: "tropical", creation: 2007, species: "Papangue, Pétrel de Barau", link: "https://www.reunion-parcnational.fr" }
+        ];
+          parks.forEach(park => {
+            let marker = L.marker(park.coords, { icon: parkIcons[park.type] }).addTo(map)
+                .bindPopup(`<b>${park.name}</b><br>Création : ${park.creation}<br>Espèces : ${park.species}<br><a href='${park.link}' target='_blank'>Site officiel</a>`);
+            markers.push(marker);
+        });
+
+        map.on('zoomend', function() {
+    var currentZoom = map.getZoom();
+    markers.forEach(marker => {
+        if (currentZoom < 5) {
+            map.removeLayer(marker);
+        } else {
+            map.addLayer(marker);
+        }
+    });
+});
+
+        
+        fetch("https://www.data.gouv.fr/fr/datasets/r/bb4cda9a-9036-4458-9113-e05b923f0656")
+    .then(response => response.json())
+    .then(data => {
+        L.geoJSON(data, {
+            style: function(feature) {
+                return { color: "green", weight: 2, opacity: 0.5, fillOpacity: 0.2 };
+            }
+        }).addTo(map);
+    })
+    .catch(error => console.error("Erreur de chargement des données GeoJSON :", error));
+
+        
+        var ctx = document.getElementById('barChart').getContext('2d');
+        var barChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ["1963", "1973", "1983", "1993", "2003", "2013", "2023"],
+                datasets: [{
+                    label: "Superficie (ha)",
+                    backgroundColor: "#388e3c",
+                    data: [50000, 120000, 200000, 300000, 400000, 550000, 700000]
+                }, {
+                    label: "Visiteurs",
+                    backgroundColor: "#1976d2",
+                    data: [100000, 250000, 400000, 600000, 750000, 900000, 1100000]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio:false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
